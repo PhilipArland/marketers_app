@@ -72,7 +72,11 @@ export async function applyPet() {
 
 export function applyTheme(theme) {
   document.documentElement.dataset.theme = THEMES[theme] ? theme : 'meadow';
+  const key = theme === 'midnight' ? '--cream' : '--green';
+  const color = getComputedStyle(document.documentElement).getPropertyValue(key).trim();
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
 }
+
 
 export function renderSettings(state, updateBrand) {
   const theme = localStorage.getItem('workspaceTheme') || 'meadow';
