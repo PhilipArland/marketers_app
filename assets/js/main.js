@@ -20,8 +20,9 @@ function updateBrand() {
     const name = state.name.trim() || 'User';
     document.getElementById('brandName').textContent = name;
     document.getElementById('brandMark').textContent = [...name][0].toUpperCase();
-    document.title = `${name} Workspace`;
+    document.title = `${name}'s Workspace`;
 }
+
 function closeSidebar() { sidebar.classList.remove('show'); backdrop.classList.remove('show'); }
 function renderDashboard() {
     pageContent.innerHTML = `${renderDashboardHeader(state.name)}${renderReportingDashboard(state)}`;

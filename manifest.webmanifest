@@ -1,6 +1,6 @@
 {
-  "name": "My Workspace",
-  "short_name": "Workspace",
+  "name": "Market Things",
+  "short_name": "Market Things",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f3e4ca",
