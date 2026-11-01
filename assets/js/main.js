@@ -35,13 +35,31 @@ function updateFavicon(name) {
     favicon.href = canvas.toDataURL('image/png');
 }
 
+let manifestUrl;
+function updateManifest(name) {
+    const manifest = {
+        name: `${name} Workspace`,
+        short_name: name,
+        start_url: `${location.origin}/`,
+        scope: `${location.origin}/`,
+        display: 'standalone',
+        background_color: '#f3e4ca',
+        theme_color: '#214638'
+    };
+    if (manifestUrl) URL.revokeObjectURL(manifestUrl);
+    manifestUrl = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' }));
+    document.querySelector('link[rel="manifest"]')?.setAttribute('href', manifestUrl);
+}
+
 function updateBrand() {
     const name = state.name.trim() || 'User';
     document.getElementById('brandName').textContent = name;
     document.getElementById('brandMark').textContent = [...name][0].toUpperCase();
     document.title = `${name} Workspace`;
     updateFavicon(name);
+    updateManifest(name); 
 }
+
 function closeSidebar() { sidebar.classList.remove('show'); backdrop.classList.remove('show'); }
 function renderDashboard() {
     pageContent.innerHTML = `${renderDashboardHeader(state.name)}${renderReportingDashboard(state)}`;
