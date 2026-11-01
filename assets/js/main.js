@@ -16,50 +16,12 @@ const pageContent = document.getElementById('pageContent');
 const sidebar = document.querySelector('.sidebar');
 const backdrop = document.getElementById('sidebarBackdrop');
 
-function updateFavicon(name) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
-    const context = canvas.getContext('2d');
-    context.fillStyle = '#214638';
-    context.beginPath();
-    context.roundRect(0, 0, 64, 64, 16);
-    context.fill();
-    context.fillStyle = '#f3bd87';
-    context.font = '700 38px system-ui, sans-serif';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText([...name][0].toUpperCase(), 32, 34);
-    let favicon = document.querySelector('link[rel="icon"]');
-    if (!favicon) { favicon = document.createElement('link'); favicon.rel = 'icon'; document.head.appendChild(favicon); }
-    favicon.href = canvas.toDataURL('image/png');
-}
-
-let manifestUrl;
-function updateManifest(name) {
-    const manifest = {
-        name: `${name} Workspace`,
-        short_name: name,
-        start_url: `${location.origin}/`,
-        scope: `${location.origin}/`,
-        display: 'standalone',
-        background_color: '#f3e4ca',
-        theme_color: '#214638'
-    };
-    if (manifestUrl) URL.revokeObjectURL(manifestUrl);
-    manifestUrl = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' }));
-    document.querySelector('link[rel="manifest"]')?.setAttribute('href', manifestUrl);
-}
-
 function updateBrand() {
     const name = state.name.trim() || 'User';
     document.getElementById('brandName').textContent = name;
     document.getElementById('brandMark').textContent = [...name][0].toUpperCase();
     document.title = `${name} Workspace`;
-    updateFavicon(name);
-    updateManifest(name); 
 }
-
 function closeSidebar() { sidebar.classList.remove('show'); backdrop.classList.remove('show'); }
 function renderDashboard() {
     pageContent.innerHTML = `${renderDashboardHeader(state.name)}${renderReportingDashboard(state)}`;

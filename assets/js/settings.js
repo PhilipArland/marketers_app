@@ -18,20 +18,6 @@ const PETS = {
   bmo: { label: 'BMO', src: 'assets/media/bmo.gif' }
 };
 
-// --- Storage meter helpers ---
-const STORAGE_LIMIT = 5 * 1024 * 1024;   // ~5 MB, the usual localStorage limit (counted in characters)
-
-const storageUsed = () => {
-  let chars = 0;
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    chars += key.length + (localStorage.getItem(key) || '').length;
-  }
-  return chars;
-};
-
-const formatSize = n => n < 1024 ? `${n} B` : n < 1024 * 1024 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1024 / 1024).toFixed(2)} MB`;
-
 const idb = () => new Promise((res, rej) => {
   const req = indexedDB.open('workspaceDB', 1);
   req.onupgradeneeded = () => req.result.createObjectStore('files');
