@@ -10,12 +10,15 @@ export const THEMES = {
   midnight: 'Midnight'
 };
 
+const RANDOM_DIR = 'assets/media/random/';
+const RANDOM_PETS = ['cat2.gif', 'cat3.gif', 'gojo.gif', 'rick.gif', 'toothless.gif'];
+
 const PETS = {
   none: { label: 'None' },
   cat: { label: 'Cat', src: 'assets/media/cat.gif' },
-  cat2: { label: 'Cat 2', src: 'assets/media/cat2.gif' },
   frog: { label: 'Frog', src: 'assets/media/frog.gif' },
-  bmo: { label: 'BMO', src: 'assets/media/bmo.gif' }
+  bmo: { label: 'BMO', src: 'assets/media/bmo.gif' },
+  random: { label: 'Random Brainrot' }
 };
 
 const idb = () => new Promise((res, rej) => {
@@ -36,14 +39,36 @@ const idbGet = key => idbRun('readonly', s => s.get(key));
 const idbSet = (key, val) => idbRun('readwrite', s => s.put(val, key));
 const idbDel = key => idbRun('readwrite', s => s.delete(key));
 
-// --- Pet ---
 let petUrl;
+const loadBag = () => { try { return JSON.parse(localStorage.getItem('petBag')) || []; } catch { return []; } };
+let bag = loadBag();
+
+const pickRandomPet = () => {
+  const last = localStorage.getItem('workspacePetRandom');
+  if (!bag.length) {
+    bag = RANDOM_PETS.map(f => RANDOM_DIR + f);
+    for (let i = bag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [bag[i], bag[j]] = [bag[j], bag[i]];
+    }
+    if (bag.length > 1 && bag.at(-1) === last) [bag[0], bag[bag.length - 1]] = [bag[bag.length - 1], bag[0]];
+  }
+  const pick = bag.pop();
+  localStorage.setItem('petBag', JSON.stringify(bag));
+  localStorage.setItem('workspacePetRandom', pick);
+  return pick;
+};
+
 export async function applyPet() {
   const img = document.getElementById('sidebarPet');
   if (!img) return;
   const pet = localStorage.getItem('workspacePet') || 'none';
   let src = PETS[pet]?.src;
-  if (pet === 'custom') {
+
+  if (pet === 'random') {
+    src = localStorage.getItem('workspacePetRandom');
+    if (!src || !RANDOM_PETS.map(f => RANDOM_DIR + f).includes(src)) src = pickRandomPet();
+  } else if (pet === 'custom') {
     try {
       const blob = await idbGet('workspacePetCustom');
       if (blob) {
@@ -139,8 +164,9 @@ export function bindSettings(state, updateBrand) {
   const markSelected = () => document.querySelectorAll('#petGrid .theme-option')
     .forEach(o => o.classList.toggle('selected', o.querySelector('input').checked));
 
-  document.querySelectorAll('input[name="pet"]').forEach(choice => choice.addEventListener('change', () => {
+  document.querySelectorAll('input[name="pet"]').forEach(choice => choice.addEventListener('click', () => {
     localStorage.setItem('workspacePet', choice.value);
+    if (choice.value === 'random') pickRandomPet();   // new pet only when you click Random
     markSelected();
     applyPet();
   }));
@@ -200,7 +226,7 @@ export function bindSettings(state, updateBrand) {
 
   confirmBtn.addEventListener('click', async () => {
     ['workspaceName', 'workspaceTheme', 'emailTemplates', 'webmailCompany',
-      'workspacePet', 'workspacePetCustom',
+      'workspacePet', 'workspacePetCustom', 'collectionState', 'petBag', 'workspacePetRandom',
       'helperGrid', 'helperGridHistory', 'emailReportV2', 'emailReport', 'webmailProgress']
       .forEach(key => localStorage.removeItem(key));
     try { await idbDel('workspacePetCustom'); } catch { }
