@@ -1061,3 +1061,21 @@ input[type="number"] {
     font-weight: 900;
     font-size: 1.6rem;
 }
+
+
+.log-table { --bs-table-bg: transparent; --bs-table-color: var(--ink); --bs-table-border-color: var(--line); font-size: .9rem; }
+.log-table th { color: var(--muted); font-weight: 600; text-align: center; font-size: .75rem; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.log-table td { font-size: .8rem; padding: 8px 0; text-align: center; border-top: 1px solid var(--line); }
+.log-table td:first-child,
+.log-table th:first-child { text-align: left; padding-left: .6rem; }
+
+.log-table tr.is-today td { background: color-mix(in srgb, var(--paper-2) 70%, transparent); font-weight: 600; }
+.quota-card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 16px; padding: 1rem 1.1rem; height: 100%; }
+.quota-card-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: .85rem; font-weight: 600; }
+.quota-card-top i { color: var(--green); font-size: 1.1rem; }
+.quota-number { font-size: 2rem; font-weight: 700; color: var(--green); line-height: 1.2; margin: .35rem 0 .6rem; }
+.quota-number small { font-size: .95rem; font-weight: 500; color: var(--muted); }
+.quota-card-foot { display: flex; justify-content: space-between; font-size: .8rem; color: var(--muted); margin-top: .4rem; }
+.quota-today { font-size: .75rem; color: var(--green-2); margin-top: .25rem; font-weight: 600; }
+.quota-card.is-done { border-color: var(--green-2); }
+.quota-card.is-done .storage-fill { background: var(--green); }

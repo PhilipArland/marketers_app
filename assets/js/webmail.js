@@ -30,7 +30,7 @@ export function renderWebmail(state) {
 
     return `
       <section class="panel webmail-panel mb-4">
-        <div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-globe2" style="color:var(--green)"></i><h2 class="panel-title">Ez Webmail</h2></div>
+        <div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-globe2" style="color:var(--green)"></i><h2 class="panel-title">Ez Webmail</h2></div>
         <div class="mb-4"><label class="form-label" for="webmailCompany">Company Name</label><input class="form-control" id="webmailCompany" maxlength="120" value="${escapeHtml(company)}" placeholder="Enter company name"></div>
         <div class="mb-2"><div class="d-flex align-items-center justify-content-between gap-3 mb-2"><label class="form-label mb-0" for="webmailSubject">Email Subject</label></div><input class="form-control" id="webmailSubject" readonly value="${escapeHtml(subject)}" placeholder="Set a Subject Template in Settings"></div>
         <button type="button" class="copy-icon-btn copy-subject-btn w-100 mb-4" id="copySubject" aria-label="Copy email subject"><i class="bi bi-copy"></i><span class="ms-1">Copy subject</span></button>

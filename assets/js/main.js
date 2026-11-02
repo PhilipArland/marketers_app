@@ -1,6 +1,8 @@
+// import './debug-date.js';
 import { renderDashboardHeader } from './dashboard.js';
 import { applyTheme, applyPet, bindSettings, renderSettings } from './settings.js';
 import { bindReportingDashboard, loadReportingState, renderReportingDashboard, resetReportingState } from './reporting.js';
+import { renderQuota, bindQuota, ensureToday, bankToday } from './quota.js';
 import { bindWebmail, renderWebmail } from './webmail.js';
 import { bindEmail, renderEmail } from './email.js';
 import { bindHelper, renderHelper } from './helper.js';
@@ -25,11 +27,15 @@ function updateBrand() {
 
 function closeSidebar() { sidebar.classList.remove('show'); backdrop.classList.remove('show'); }
 function renderDashboard() {
-    pageContent.innerHTML = `${renderDashboardHeader(state.name)}${renderReportingDashboard(state)}`;
-    bindReportingDashboard(state, () => { resetReportingState(state); renderDashboard(); });
+    pageContent.innerHTML = `${renderDashboardHeader(state.name)}${renderQuota()}`;
+    bindQuota();
+}
+function renderReport() {
+    pageContent.innerHTML = renderReportingDashboard(state);
+    bindReportingDashboard(state, () => { bankToday(state); resetReportingState(state); renderReport(); });
 }
 function setPage(page) {
-    const titles = { dashboard: ['Workspace overview', 'Dashboard'], collection: ['Company records', 'Collection'], email: ['Email workspace', 'Email'], webmail: ['Webmail workspace', 'Webmail'], helper: ['Helper tools', 'Helper'], settings: ['Personalize your workspace', 'Settings'] };
+    const titles = { dashboard: ['Workspace overview', 'Dashboard'], report: ['Reporting', 'Report'], collection: ['Company records', 'Collection'], email: ['Email workspace', 'Email'], webmail: ['Webmail workspace', 'Webmail'], helper: ['Helper tools', 'Helper'], settings: ['Personalize your workspace', 'Settings'] };
     const selected = titles[page] ? page : 'dashboard';
     document.querySelectorAll('#sidebarNav .nav-link').forEach(link => link.classList.toggle('active', link.dataset.page === selected));
     document.querySelectorAll('.mobile-nav-link').forEach(link => link.classList.toggle('active', link.dataset.page === selected));
@@ -37,6 +43,7 @@ function setPage(page) {
     document.getElementById('pageTitle').textContent = titles[selected][1];
     if (selected === 'dashboard') renderDashboard();
     else if (selected === 'settings') { pageContent.innerHTML = renderSettings(state); bindSettings(state, updateBrand); }
+    else if (selected === 'report') { renderReport(); }
     else if (selected === 'collection') { pageContent.innerHTML = renderCollection(state); bindCollection(state); }
     else if (selected === 'email') { pageContent.innerHTML = renderEmail(state); bindEmail(state); }
     else if (selected === 'webmail') { pageContent.innerHTML = renderWebmail(state); bindWebmail(state); }

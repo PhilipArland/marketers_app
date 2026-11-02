@@ -1,4 +1,5 @@
 import { escapeHtml, formatDate } from './utils.js';
+import { logToday } from './quota.js';
 
 const STORAGE_KEY = 'workspaceReporting';
 const blankCollection = () => ({ country: '', segment: '', names: '', emails: '' });
@@ -20,7 +21,13 @@ export function loadReportingState() {
         if (!Array.isArray(reporting.collections) || !reporting.collections.length) reporting.collections = [blankCollection()];
         if (!Array.isArray(reporting.emailEntries) || !reporting.emailEntries.length) reporting.emailEntries = [blankDelivery()];
         if (!Array.isArray(reporting.webmailEntries) || !reporting.webmailEntries.length) reporting.webmailEntries = [blankDelivery()];
-        if (reporting.responseDate !== todayKey()) { reporting.responses = { received: '0', notInterested: '0' }; reporting.responseDate = todayKey(); }
+        if (reporting.responseDate !== todayKey()) {
+            reporting.responses = { received: '0', notInterested: '0' };
+            reporting.collections.forEach(item => { item.names = ''; item.emails = ''; });
+            reporting.emailEntries.forEach(item => { item.sent = ''; });
+            reporting.webmailEntries.forEach(item => { item.sent = ''; });
+            reporting.responseDate = todayKey();
+        }
         return reporting;
     } catch { return defaults; }
 }
@@ -59,9 +66,8 @@ function updatePreview(state) {
 }
 function updateButtons(state) { document.querySelectorAll('[data-toggle-section]').forEach(button => { const open = state.visible[button.dataset.toggleSection]; button.classList.toggle('active', open); button.setAttribute('aria-expanded', String(open)); }); }
 function bindFields(state, refresh) {
-    document.querySelectorAll('[data-report-key]').forEach(element => element.addEventListener('input', () => { const { reportGroup: group, reportKey: key, reportIndex: index } = element.dataset; if (group === 'responses') state.responses[key] = element.value; else state[group][Number(index)][key] = element.value; saveReportingState(state); updatePreview(state); }));
-    document.querySelectorAll('[data-add-entry]').forEach(button => button.addEventListener('click', () => { const type = button.dataset.addEntry; if (type === 'collection') state.collections.push(blankCollection()); else if (type === 'email') state.emailEntries.push(blankDelivery()); else state.webmailEntries.push(blankDelivery()); saveReportingState(state); refresh(); }));
-    document.querySelectorAll('[data-remove-entry]').forEach(button => button.addEventListener('click', () => { state[button.dataset.removeEntry].splice(Number(button.dataset.removeIndex), 1); saveReportingState(state); refresh(); }));
+    document.querySelectorAll('[data-report-key]').forEach(element => element.addEventListener('input', () => { const { reportGroup: group, reportKey: key, reportIndex: index } = element.dataset; if (group === 'responses') state.responses[key] = element.value; else state[group][Number(index)][key] = element.value; saveReportingState(state); logToday(state); updatePreview(state); })); document.querySelectorAll('[data-add-entry]').forEach(button => button.addEventListener('click', () => { const type = button.dataset.addEntry; if (type === 'collection') state.collections.push(blankCollection()); else if (type === 'email') state.emailEntries.push(blankDelivery()); else state.webmailEntries.push(blankDelivery()); saveReportingState(state); refresh(); }));
+    document.querySelectorAll('[data-remove-entry]').forEach(button => button.addEventListener('click', () => { state[button.dataset.removeEntry].splice(Number(button.dataset.removeIndex), 1); saveReportingState(state); logToday(state); refresh(); }));
 }
 export function renderReportingDashboard(state) {
     const locationButton = state.locationType === 'state' ? 'Use Country' : 'Use State';

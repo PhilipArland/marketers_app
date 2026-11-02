@@ -227,7 +227,8 @@ export function bindSettings(state, updateBrand) {
   confirmBtn.addEventListener('click', async () => {
     ['workspaceName', 'workspaceTheme', 'emailTemplates', 'webmailCompany',
       'workspacePet', 'workspacePetCustom', 'collectionState', 'petBag', 'workspacePetRandom',
-      'helperGrid', 'helperGridHistory', 'emailReportV2', 'emailReport', 'webmailProgress']
+      'helperGrid', 'helperGridHistory', 'emailReportV2', 'emailReport', 'webmailProgress',
+      'workspaceLog', 'workspaceQuota']
       .forEach(key => localStorage.removeItem(key));
     try { await idbDel('workspacePetCustom'); } catch { }
 
