@@ -10,9 +10,9 @@ const loadProgress = () => {
 const saveProgress = p => localStorage.setItem(PROGRESS_KEY, JSON.stringify(p));
 
 const progressText = (state, p) => {
-    const country1 = p.country1.trim() || '{country1}';
-    const country2 = p.country2.trim() || '{country2}';
-    const segment = p.segment.trim() || '{segment}';
+    const country1 = p.country1.trim() || '';
+    const country2 = p.country2.trim() || '';
+    const segment = p.segment.trim() || '';
     const segment2 = p.showSegment2 ? ` for ${p.segment2.trim() || '{segment2}'}` : '';
     const name = (state.name || '').trim() || 'User';
     return `Hi team, I have finished sending webmails in ${country1} for ${segment}. I will start sending webmails in ${country2}${segment2} now.\n\n- ${name}`;
@@ -42,17 +42,25 @@ export function renderWebmail(state) {
       <section class="panel webmail-panel">
         <div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-graph-up-arrow" style="color:var(--green)"></i><h2 class="panel-title">Progress Report</h2></div>
 
-        <div class="row g-3 mb-3">
+               <div class="row mb-3 gx-2">
           <div class="col-12 col-md-6"><label class="form-label" for="webmailCountry1">Country 1</label><input class="form-control" id="webmailCountry1" value="${escapeHtml(p.country1)}" placeholder="Enter first country"></div>
           <div class="col-12 col-md-6"><label class="form-label" for="webmailCountry2">Country 2</label><input class="form-control" id="webmailCountry2" value="${escapeHtml(p.country2)}" placeholder="Enter second country"></div>
         </div>
 
-        <div class="row g-3 mb-3" id="segmentRow">
-          <div id="segment1Col"><label class="form-label" for="webmailMarketSegment">Market Segment</label><input class="form-control" id="webmailMarketSegment" value="${escapeHtml(p.segment)}" placeholder="Enter market segment"></div>
-          <div id="addSegmentCol" class="d-flex align-items-end"><button type="button" class="btn w-100" id="addSegment" aria-label="Add second market segment" style="background:var(--green);color:var(--cream);"><i class="bi bi-plus-lg"></i></button></div>
-          <div id="segment2Col">
-            <div class="d-flex justify-content-between align-items-center"><label class="form-label" for="webmailMarketSegment2">Market Segment 2</label><button type="button" class="btn btn-link btn-sm p-0 mb-2" id="removeSegment" style="color:var(--green)"><i class="bi bi-x-lg"></i></button></div>
-            <input class="form-control" id="webmailMarketSegment2" value="${escapeHtml(p.segment2)}" placeholder="Enter second market segment">
+        <div class="row mb-3 gx-2 gy-3">
+          <div id="segment1Col">
+            <label class="form-label" for="webmailMarketSegment">Market Segment</label>
+            <div class="input-group">
+              <input class="form-control" id="webmailMarketSegment" value="${escapeHtml(p.segment)}" placeholder="Enter market segment">
+              <button type="button" class="btn helper-btn" id="addSegment" aria-label="Add second market segment" ${p.showSegment2 ? 'hidden' : ''}><i class="bi bi-plus-lg"></i></button>
+            </div>
+          </div>
+          <div id="segment2Col" hidden>
+            <label class="form-label" for="webmailMarketSegment2">Market Segment 2</label>
+            <div class="input-group">
+              <input class="form-control" id="webmailMarketSegment2" value="${escapeHtml(p.segment2)}" placeholder="Enter second market segment">
+              <button type="button" class="btn helper-btn" id="removeSegment" aria-label="Remove second market segment"><i class="bi bi-dash-lg"></i></button>
+            </div>
           </div>
         </div>
 
@@ -90,9 +98,6 @@ export function bindWebmail(state) {
     const segment = document.getElementById('webmailMarketSegment');
     const segment2 = document.getElementById('webmailMarketSegment2');
     const report = document.getElementById('progressReport');
-    const segment1Col = document.getElementById('segment1Col');
-    const addCol = document.getElementById('addSegmentCol');
-    const segment2Col = document.getElementById('segment2Col');
 
     const refresh = () => {
         p.country1 = country1.value;
@@ -103,11 +108,13 @@ export function bindWebmail(state) {
         report.value = progressText(state, p);
     };
 
-    // Segment 1 is col-11 with the + button; after clicking +, both segments become col-6.
     const applyLayout = () => {
-        segment1Col.className = p.showSegment2 ? 'col-12 col-md-6' : 'col-12 col-md-11';
-        addCol.className = p.showSegment2 ? 'd-none' : 'col-12 col-md-1 d-flex align-items-end';
-        segment2Col.className = p.showSegment2 ? 'col-12 col-md-6' : 'd-none';
+        const col1 = document.getElementById('segment1Col');
+        const col2 = document.getElementById('segment2Col');
+        col1.className = p.showSegment2 ? 'col-12 col-md-6' : 'col-12';
+        col2.className = p.showSegment2 ? 'col-12 col-md-6' : 'd-none';
+        col2.hidden = !p.showSegment2;
+        document.getElementById('addSegment').hidden = p.showSegment2;
     };
 
     [country1, country2, segment, segment2].forEach(el => el.addEventListener('input', refresh));
