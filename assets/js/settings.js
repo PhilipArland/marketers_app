@@ -179,7 +179,6 @@ export function renderSettings(state, updateBrand) {
           <fieldset class="mb-4"><legend class="form-label mb-2">Color theme</legend>
             <div class="theme-grid">${choices}${customOption}</div>
             <div class="row g-3 mt-1" id="customThemeBox" ${theme === 'custom' ? '' : 'hidden'}>
-              <div class="row g-3 mt-1" id="customThemeBox" ${theme === 'custom' ? '' : 'hidden'}>
               <div class="col-12 d-flex align-items-center justify-content-end gap-2">
                 <span class="small text-secondary text-end">Need help picking colors?</span>
                 <button type="button" class="btn btn-sm helper-btn rounded-circle" id="colorHelpBtn" style="width:1.75rem;height:1.75rem;padding:0;line-height:1" aria-label="Get color ideas from AI" title="Get color ideas from AI">?</button>
@@ -281,10 +280,10 @@ export function bindSettings(state, updateBrand) {
   // --- Theme ---
   const customBox = document.getElementById('customThemeBox');
   document.querySelectorAll('input[name="theme"]').forEach(choice => choice.addEventListener('change', () => {
-    applyTheme(choice.value);
-    customBox.hidden = choice.value !== 'custom';
+    document.getElementById('customThemeBox').hidden = choice.value !== 'custom';
     document.querySelectorAll('input[name="theme"]').forEach(i => i.closest('.theme-option').classList.toggle('selected', i.checked));
     localStorage.setItem('workspaceTheme', choice.value);
+    applyTheme(choice.value);
   }));
 
   document.querySelectorAll('[data-custom]').forEach(picker => picker.addEventListener('input', () => {
@@ -297,7 +296,7 @@ export function bindSettings(state, updateBrand) {
     if (swatch) swatch.style.background = `linear-gradient(135deg, ${c.side || c.main} 50%, ${c.accent} 50%)`;
   }));
 
-    // --- Color help modal ---
+  // --- Color help modal ---
   const helpModalEl = document.getElementById('colorHelpModal');
   const helpInput = document.getElementById('colorPrefInput');
   const helpMsg = document.getElementById('colorPromptMessage');
