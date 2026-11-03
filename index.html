@@ -46,13 +46,16 @@
 
         <main class="main-area">
             <header class="topbar">
-                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
-                    <i class="bi bi-list"></i>
-                </button>
-                <div>
+                <div class="page-heading">
+                    <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="Collapse sidebar"
+                        aria-controls="sidebar" aria-expanded="true" title="Collapse sidebar">
+                        <i class="bi bi-list"></i>
+                    </button>
 
-                    <div class="eyebrow" id="pageEyebrow">Workspace overview</div>
-                    <h1 id="pageTitle">Dashboard</h1>
+                    <div>
+                        <div class="eyebrow" id="pageEyebrow">Workspace overview</div>
+                        <h1 id="pageTitle">Dashboard</h1>
+                    </div>
                 </div>
                 <div class="today-chip"><i class="bi bi-calendar3 me-2"></i><span id="todayLabel"></span></div>
             </header>

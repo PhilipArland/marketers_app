@@ -38,7 +38,7 @@ export function renderCollection(state) {
   const p = load();
   return `
       <div class="row g-3">
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-lg-6">
           <section class="panel collection-panel h-100">
             <div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-building" style="color:var(--green)"></i><h2 class="panel-title">Ez Collection</h2></div>
 
@@ -71,7 +71,7 @@ export function renderCollection(state) {
           </section>
         </div>
 
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-lg-6">
           <section class="panel collection-panel h-100">
             <div class="d-flex justify-content-between small mb-1"><span class="form-label mb-0">Progress</span><span id="collProgressText" style="color:var(--muted)"></span></div>
             <div class="storage-bar mb-3"><div class="storage-fill" id="collProgressFill"></div></div>

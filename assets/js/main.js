@@ -36,7 +36,7 @@ function renderReport() {
     bindReportingDashboard(state, () => { bankToday(state); resetReportingState(state); renderReport(); });
 }
 function setPage(page) {
-    const titles = { dashboard: ['Workspace overview', 'Dashboard'], report: ['Reporting', 'Report'], collection: ['Company records', 'Collection'], email: ['Email workspace', 'Email'], webmail: ['Webmail workspace', 'Webmail'], helper: ['Helper tools', 'Helper'], settings: ['Personalize your workspace', 'Settings'] };
+    const titles = { dashboard: ['Workspace overview', 'Dashboard'], report: ['Reporting', 'Report'], collection: ['Collection workspace', 'Collection'], email: ['Email workspace', 'Email'], webmail: ['Webmail workspace', 'Webmail'], helper: ['Helper tools', 'Helper'], settings: ['Personalize workspace', 'Settings'] };
     const selected = titles[page] ? page : 'dashboard';
     document.querySelectorAll('#sidebarNav .nav-link').forEach(link => link.classList.toggle('active', link.dataset.page === selected));
     document.querySelectorAll('.mobile-nav-link').forEach(link => link.classList.toggle('active', link.dataset.page === selected));
@@ -52,7 +52,18 @@ function setPage(page) {
     else pageContent.innerHTML = `<section class="panel blank-state"><div><div class="blank-icon"><i class="bi bi-${selected === 'collection' ? 'building' : selected === 'email' ? 'envelope' : 'globe2'}"></i></div><h2 class="h5 mb-2" style="color:var(--green)">${titles[selected][1]} page</h2><p class="small mb-0">This page is ready for your tools.</p></div></section>`;
 }
 
-document.getElementById('sidebarToggle').addEventListener('click', () => { sidebar.classList.toggle('show'); backdrop.classList.toggle('show'); });
+const sidebarToggle = document.getElementById('sidebarToggle');
+const appShell = document.querySelector('.app-shell');
+
+sidebarToggle.addEventListener('click', () => {
+    const isCollapsed = appShell.classList.toggle('sidebar-collapsed');
+
+    sidebarToggle.setAttribute('aria-expanded', !isCollapsed);
+    sidebarToggle.setAttribute(
+        'title',
+        isCollapsed ? 'Show sidebar' : 'Hide sidebar'
+    );
+});
 backdrop.addEventListener('click', closeSidebar);
 document.getElementById('sidebarNav').addEventListener('click', event => {
     const link = event.target.closest('[data-page]');

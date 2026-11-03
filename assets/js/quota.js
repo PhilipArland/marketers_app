@@ -3,7 +3,7 @@ import { dateKey, formatDate } from './utils.js';
 const LOG_KEY = 'workspaceLog';
 const QUOTA_KEY = 'workspaceQuota';
 const CATS = [
-    { key: 'collection', label: 'Collected emails', icon: 'building' },
+    { key: 'collection', label: 'Collected company', icon: 'building' },
     { key: 'email', label: 'Sent emails', icon: 'envelope' },
     { key: 'webmail', label: 'Sent webmails', icon: 'globe2' }
 ];
@@ -26,7 +26,7 @@ const loadQuota = () => ({ ...DEFAULT_QUOTA, ...read(QUOTA_KEY, {}) });
 
 const sum = (list, key) => list.reduce((t, item) => t + (Number(item[key]) || 0), 0);
 const current = state => ({
-    collection: sum(state.collections, 'emails'),
+    collection: sum(state.collections, 'names'),
     email: sum(state.emailEntries, 'sent'),
     webmail: sum(state.webmailEntries, 'sent'),
     received: Number(state.responses.received) || 0,
@@ -73,7 +73,7 @@ export function renderQuota() {
         const pct = q ? Math.min(100, Math.round(done / q * 100)) : 0;
         const note = !q ? 'Set quota' : done >= q ? 'Quota reached' : `${q - done} left`;
         const today = log[t]?.total?.[key] || 0;
-        return `<div class="col-12 col-md-4">
+        return `<div class="col-12 col-lg-4">
             <div class="quota-card ${q && done >= q ? 'is-done' : ''}">
               <div class="quota-card-top"><span>${label}</span><i class="bi bi-${icon}"></i></div>
               <div class="quota-number">${done}<small> / ${q || '-'}</small></div>
