@@ -151,7 +151,7 @@
 
 :root[data-theme="midnight"] .copy-btn:hover {
     background: var(--green-2);
-    color: #fff;
+    color: #000;
 }
 
 :root[data-theme="midnight"] .date-card.payout {
