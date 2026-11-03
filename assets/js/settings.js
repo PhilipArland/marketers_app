@@ -179,6 +179,11 @@ export function renderSettings(state, updateBrand) {
           <fieldset class="mb-4"><legend class="form-label mb-2">Color theme</legend>
             <div class="theme-grid">${choices}${customOption}</div>
             <div class="row g-3 mt-1" id="customThemeBox" ${theme === 'custom' ? '' : 'hidden'}>
+              <div class="row g-3 mt-1" id="customThemeBox" ${theme === 'custom' ? '' : 'hidden'}>
+              <div class="col-12 d-flex align-items-center justify-content-end gap-2">
+                <span class="small text-secondary text-end">Need help picking colors?</span>
+                <button type="button" class="btn btn-sm helper-btn rounded-circle" id="colorHelpBtn" style="width:1.75rem;height:1.75rem;padding:0;line-height:1" aria-label="Get color ideas from AI" title="Get color ideas from AI">?</button>
+              </div>
               ${[['bg', 'Background'], ['side', 'Sidebar'], ['main', 'Main color'], ['accent', 'Accent']].map(([key, label]) => `
                 <div class="col-6 col-md-3">
                   <label class="form-label small" for="custom_${key}">${label}</label>
@@ -236,6 +241,27 @@ export function renderSettings(state, updateBrand) {
             <button type="button" class="reset-btn" id="resetConfirmBtn">Yes, reset everything</button>
           </div>
         </div>
+      </div>
+      
+      <div class="modal" id="colorHelpModal" tabindex="-1" aria-labelledby="colorHelpTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="colorHelpTitle">Customize colors</h5>
+              <button type="button" class="btn-close js-color-help-close" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p class="small text-secondary">Describe the colors you like, copy the prompt, and paste it into ChatGPT or another AI. Then enter the four HEX colors it gives you in the Custom theme pickers.</p>
+              <label class="form-label" for="colorPrefInput">Color preference</label>
+              <input class="form-control" id="colorPrefInput" maxlength="200" placeholder="e.g. sage green and cream" autocomplete="off">
+              <div class="small text-secondary mt-2" id="colorPromptMessage" role="status"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light js-color-help-close">Close</button>
+              <button type="button" class="copy-btn" id="copyColorPromptBtn"><i class="bi bi-clipboard me-1"></i>Copy prompt</button>
+            </div>
+          </div>
+        </div>
       </div>`;
 }
 
@@ -270,6 +296,80 @@ export function bindSettings(state, updateBrand) {
     const swatch = document.getElementById('customSwatch');
     if (swatch) swatch.style.background = `linear-gradient(135deg, ${c.side || c.main} 50%, ${c.accent} 50%)`;
   }));
+
+    // --- Color help modal ---
+  const helpModalEl = document.getElementById('colorHelpModal');
+  const helpInput = document.getElementById('colorPrefInput');
+  const helpMsg = document.getElementById('colorPromptMessage');
+
+  const showHelp = () => {
+    helpMsg.textContent = '';
+    if (window.bootstrap?.Modal) {
+      bootstrap.Modal.getOrCreateInstance(helpModalEl).show();
+    } else {
+      helpModalEl.style.display = 'block';
+      helpModalEl.classList.add('show');
+      helpModalEl.removeAttribute('aria-hidden');
+      helpModalEl.setAttribute('aria-modal', 'true');
+    }
+    setTimeout(() => helpInput.focus(), 150);
+  };
+  const hideHelp = () => {
+    if (window.bootstrap?.Modal) {
+      bootstrap.Modal.getOrCreateInstance(helpModalEl).hide();
+    } else {
+      helpModalEl.style.display = 'none';
+      helpModalEl.classList.remove('show');
+      helpModalEl.setAttribute('aria-hidden', 'true');
+      helpModalEl.removeAttribute('aria-modal');
+    }
+  };
+
+  const buildColorPrompt = pref => [
+    `I'm customizing the color theme of a web app. My color preference: ${pref}.`,
+    '',
+    'Give me exactly four HEX colors, one for each role:',
+    '- Background: the page background',
+    '- Sidebar: the sidebar background',
+    '- Main: the primary color for headings, buttons and links (must be easy to read on the Background)',
+    '- Accent: a highlight color for small details',
+    '',
+    'Reply with only these four lines, in exactly this format and nothing else:',
+    'Background: #RRGGBB',
+    'Sidebar: #RRGGBB',
+    'Main: #RRGGBB',
+    'Accent: #RRGGBB',
+    '',
+    'Use 6-digit HEX codes only (no color names, no shorthand like #fff). Make sure there is good contrast between Main and Background.'
+  ].join('\n');
+
+  const copyText = async text => {
+    try { await navigator.clipboard.writeText(text); return true; } catch { }
+    // fallback for non-HTTPS / blocked clipboard; textarea lives inside the modal so Bootstrap's focus trap doesn't block it
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;';
+    helpModalEl.appendChild(ta);
+    ta.focus();
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch { }
+    ta.remove();
+    return ok;
+  };
+
+  const copyColorPrompt = async () => {
+    const pref = helpInput.value.trim();
+    if (!pref) { helpMsg.textContent = 'Enter a color preference first.'; helpInput.focus(); return; }
+    helpMsg.textContent = (await copyText(buildColorPrompt(pref)))
+      ? 'Prompt copied. Paste it into ChatGPT or another AI.'
+      : 'Could not copy automatically. Please try again or use a secure (HTTPS) page.';
+  };
+
+  document.getElementById('colorHelpBtn').addEventListener('click', showHelp);
+  document.getElementById('copyColorPromptBtn').addEventListener('click', copyColorPrompt);
+  helpModalEl.querySelectorAll('.js-color-help-close').forEach(b => b.addEventListener('click', hideHelp));
+  helpInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); copyColorPrompt(); } });
 
   // --- Pets ---
   const petMessage = document.getElementById('petMessage');
