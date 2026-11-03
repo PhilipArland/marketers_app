@@ -51,6 +51,19 @@
     --line: #ead8c9;
 }
 
+:root[data-theme="sakura"] {
+    --cream: #F8D5E3;
+    --paper: #FFF5F9;
+    --paper-2: #FCE5EF;
+    --green: #A83F70;
+    --green-2: #CB5D8D;
+    --sage: #F0BBD1;
+    --orange: #F4A6BD;
+    --ink: #713B58;
+    --muted: #B77F9B;
+    --line: #F3D1E0;
+}
+
 :root[data-theme="midnight"] {
     --cream: #121a27;
     --paper: #1c2838;
@@ -162,6 +175,75 @@
 :root[data-theme="midnight"] .responses-section {
     background: #1a293a;
     border: 1px solid #354b60;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+/* Dark custom themes: same treatment as Midnight, but built from the theme variables */
+:root[data-mode="dark"]:not([data-theme="midnight"]) .form-control,
+:root[data-mode="dark"]:not([data-theme="midnight"]) .form-select,
+:root[data-mode="dark"]:not([data-theme="midnight"]) .report-paper,
+:root[data-mode="dark"]:not([data-theme="midnight"]) .mode-btn,
+:root[data-mode="dark"]:not([data-theme="midnight"]) .mobile-nav-link,
+:root[data-mode="dark"]:not([data-theme="midnight"]) .form-control:focus,
+:root[data-mode="dark"]:not([data-theme="midnight"]) .form-select:focus {
+    background: var(--cream);
+    color: var(--ink);
+}
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .mode-btn[aria-expanded="false"] {
+    background: var(--cream);
+    color: var(--muted);
+}
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .sidebar {
+    background: color-mix(in srgb, var(--cream) 80%, #000);
+    border-right: 1px solid var(--line);
+}
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .sidebar .nav-label,
+:root[data-mode="dark"]:not([data-theme="midnight"]) .sidebar-bottom {
+    color: var(--muted);
+}
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .sidebar .nav-link {
+    color: var(--ink);
+}
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .sidebar .nav-link:hover,
+:root[data-mode="dark"]:not([data-theme="midnight"]) .sidebar .nav-link.active {
+    background: color-mix(in srgb, var(--green) 16%, transparent);
+    color: var(--ink);
+}
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .sidebar .nav-link.active {
+    box-shadow: inset 3px 0 0 var(--orange);
+}
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .brand-mark {
+    background: var(--orange);
+    color: var(--cream);
+}
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .date-card.payout {
+    background: var(--orange);
+    color: var(--cream);
+}
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .date-card.holiday {
+    background: var(--paper-2);
+    color: var(--ink);
+}
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .date-card .card-label,
+:root[data-mode="dark"]:not([data-theme="midnight"]) .date-card .date-value,
+:root[data-mode="dark"]:not([data-theme="midnight"]) .date-card .date-note { color: inherit; }
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .form-label { color: var(--muted); }
+
+:root[data-mode="dark"]:not([data-theme="midnight"]) .responses-section {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
     border-radius: 12px;
     padding: 16px;
 }
@@ -353,7 +435,8 @@ body {
 }
 
 .sidebar .nav-link {
-    color: #dce6dc;
+    /* color: #dce6dc; */
+    color: var(--cream);
     border-radius: 11px;
     padding: 11px 13px;
     display: flex;
@@ -716,9 +799,11 @@ h1 {
 
 .theme-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
 }
+
+.pet-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 
 .theme-option {
     display: flex;
@@ -800,6 +885,12 @@ h1 {
 
 .mobile-navbar {
     display: none;
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .theme-grid, .pet-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
 }
 
 @media (max-width: 767.98px) {
@@ -1079,3 +1170,28 @@ input[type="number"] {
 .quota-today { font-size: .75rem; color: var(--green-2); margin-top: .25rem; font-weight: 600; }
 .quota-card.is-done { border-color: var(--green-2); }
 .quota-card.is-done .storage-fill { background: var(--green); }
+
+input[type="color"].form-control-color {
+    background: color-mix(in srgb, var(--cream) 15%, transparent) !important;
+    cursor: pointer;
+}
+
+:root[data-theme="custom"][data-mode] .sidebar {
+  background: var(--side);
+  border-right: 1px solid var(--line);
+}
+:root[data-theme="custom"][data-mode] .sidebar .nav-label,
+:root[data-theme="custom"][data-mode] .sidebar-bottom {
+  color: var(--side-ink);
+}
+:root[data-theme="custom"][data-mode] .sidebar .nav-link {
+  color: var(--side-ink);
+}
+:root[data-theme="custom"][data-mode] .sidebar .nav-link:hover,
+:root[data-theme="custom"][data-mode] .sidebar .nav-link.active {
+  background: color-mix(in srgb, var(--side-ink) 12%, transparent);
+  color: var(--side-ink);
+}
+:root[data-theme="custom"][data-mode] .sidebar .nav-link.active {
+  box-shadow: inset 3px 0 0 var(--orange);
+}

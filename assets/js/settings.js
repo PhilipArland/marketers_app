@@ -6,6 +6,7 @@ export const THEMES = {
   ocean: 'Ocean',
   plum: 'Plum',
   sunset: 'Sunset',
+  sakura: 'Sakura',
   lavender: 'Lavender',
   midnight: 'Midnight'
 };
@@ -81,13 +82,70 @@ export async function applyPet() {
   else { img.removeAttribute('src'); img.hidden = true; }
 }
 
-export function applyTheme(theme) {
-  document.documentElement.dataset.theme = THEMES[theme] ? theme : 'meadow';
-  const key = theme === 'midnight' ? '--cream' : '--green';
-  const color = getComputedStyle(document.documentElement).getPropertyValue(key).trim();
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
+// --- Custom theme ---
+const CUSTOM_KEY = 'workspaceThemeCustom';
+const CUSTOM_DEFAULT = { bg: '#f3e4ca', main: '#214638', accent: '#f3bd87', side: '' };   // side '' = same as main
+const CUSTOM_VARS = ['--cream', '--paper', '--paper-2', '--green', '--green-2', '--sage', '--orange', '--ink', '--muted', '--line', '--side', '--side-ink'];
+
+const loadCustomTheme = () => {
+  try { return { ...CUSTOM_DEFAULT, ...JSON.parse(localStorage.getItem(CUSTOM_KEY)) }; }
+  catch { return { ...CUSTOM_DEFAULT }; }
+};
+
+const hexToRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, t) => {
+  const A = hexToRgb(a), B = hexToRgb(b);
+  return '#' + A.map((v, i) => Math.round(v * (1 - t) + B[i] * t).toString(16).padStart(2, '0')).join('');
+};
+const isDark = h => { const [r, g, b] = hexToRgb(h); return (0.299 * r + 0.587 * g + 0.114 * b) < 128; };
+
+const lum = h => {
+  const [r, g, b] = hexToRgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; });
+  return .2126 * r + .7152 * g + .0722 * b;
+};
+const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+
+// darkens (light themes) or lightens (dark themes) the main color until it is readable on the background
+const readable = (main, bg) => {
+  const target = isDark(bg) ? '#ffffff' : '#000000';
+  let c = main;
+  for (let i = 0; i < 20 && contrast(c, bg) < 4.5; i++) c = mix(c, target, .1);
+  return c;
+};
+
+function customPalette(c) {
+  const { bg, accent } = c;
+  const main = readable(c.main, bg);
+  const pal = isDark(bg) ? {
+    '--cream': bg, '--paper': mix(bg, '#ffffff', .06), '--paper-2': mix(bg, '#ffffff', .12),
+    '--green': main, '--green-2': mix(main, '#ffffff', .3), '--sage': mix(bg, main, .4), '--orange': accent,
+    '--ink': mix(bg, '#ffffff', .92), '--muted': mix(bg, '#ffffff', .65), '--line': mix(bg, '#ffffff', .2)
+  } : {
+    '--cream': bg, '--paper': mix(bg, '#ffffff', .65), '--paper-2': mix(bg, '#ffffff', .4),
+    '--green': main, '--green-2': mix(main, '#ffffff', .2), '--sage': mix(bg, main, .35), '--orange': accent,
+    '--ink': mix(main, '#000000', .45), '--muted': mix(main, bg, .45), '--line': mix(bg, main, .12)
+  };
+  const side = c.side || main;
+  pal['--side'] = side;
+  pal['--side-ink'] = isDark(side) ? '#f4f4f4' : mix(side, '#000000', .75);
+  return pal;
 }
 
+export function applyTheme(theme) {
+  const t = theme === 'custom' || THEMES[theme] ? theme : 'meadow';
+  const root = document.documentElement;
+  root.dataset.theme = t;
+  CUSTOM_VARS.forEach(v => root.style.removeProperty(v));
+  let dark = t === 'midnight';
+  if (t === 'custom') {
+    const c = loadCustomTheme();
+    dark = isDark(c.bg);
+    Object.entries(customPalette(c)).forEach(([k, v]) => root.style.setProperty(k, v));
+  }
+  root.dataset.mode = dark ? 'dark' : 'light';
+  const color = getComputedStyle(root).getPropertyValue(dark ? '--cream' : '--green').trim();
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
+}
 
 export function renderSettings(state, updateBrand) {
   const theme = localStorage.getItem('workspaceTheme') || 'meadow';
@@ -96,6 +154,12 @@ export function renderSettings(state, updateBrand) {
         <input type="radio" name="theme" value="${key}" ${key === theme ? 'checked' : ''}>
         <span class="theme-swatch theme-${key}" aria-hidden="true"></span><span>${label}</span>
       </label>`).join('');
+  const custom = loadCustomTheme();
+  const customOption = `
+      <label class="theme-option ${theme === 'custom' ? 'selected' : ''}">
+        <input type="radio" name="theme" value="custom" ${theme === 'custom' ? 'checked' : ''}>
+        <span class="theme-swatch" id="customSwatch" style="background:linear-gradient(135deg, ${custom.side || custom.main} 50%, ${custom.accent} 50%)" aria-hidden="true"></span><span>Custom</span>
+      </label>`;
 
   const pet = localStorage.getItem('workspacePet') || 'none';
   const petOption = (key, label, extra = '') => `
@@ -112,15 +176,24 @@ export function renderSettings(state, updateBrand) {
           <div class="d-flex align-items-center gap-3 mb-2"><div class="blank-icon mb-0"><i class="bi bi-person-gear"></i></div><div><h2 class="panel-title">Workspace settings</h2><div class="panel-subtitle">Personalize your workspace.</div></div></div>
           <label class="form-label" for="displayName">Your Bitrix name</label>
           <input class="form-control mb-3" id="displayName" maxlength="50" value="${escapeHtml(state.name)}" placeholder="Enter your name">
-          <fieldset class="mb-4"><legend class="form-label mb-2">Color theme</legend><div class="theme-grid">${choices}</div></fieldset>
-          <fieldset><legend class="form-label mb-2">Pets</legend><div class="theme-grid" id="petGrid">${petChoices}</div><label class="btn btn-sm helper-btn mt-3 w-100 py-2" for="petUpload"><i class="bi bi-upload me-1"></i>Upload your own pet</label><input type="file" id="petUpload" accept="image/*" hidden><div class="small text-secondary mt-2 text-center" id="petMessage" role="status">Any image. GIFs stay animated.</div></fieldset>
+          <fieldset class="mb-4"><legend class="form-label mb-2">Color theme</legend>
+            <div class="theme-grid">${choices}${customOption}</div>
+            <div class="row g-3 mt-1" id="customThemeBox" ${theme === 'custom' ? '' : 'hidden'}>
+              ${[['bg', 'Background'], ['side', 'Sidebar'], ['main', 'Main color'], ['accent', 'Accent']].map(([key, label]) => `
+                <div class="col-6 col-md-3">
+                  <label class="form-label small" for="custom_${key}">${label}</label>
+                  <input type="color" class="form-control form-control-color w-100" id="custom_${key}" data-custom="${key}" value="${custom[key] || custom.main}">
+                </div>`).join('')}
+            </div>
+          </fieldset>
+          <fieldset><legend class="form-label mb-2">Pets</legend><div class="theme-grid pet-grid" id="petGrid">${petChoices}</div><label class="btn btn-sm helper-btn mt-3 w-100 py-2" for="petUpload"><i class="bi bi-upload me-1"></i>Upload your own pet</label><input type="file" id="petUpload" accept="image/*" hidden><div class="small text-secondary mt-2 text-center" id="petMessage" role="status">Any image. GIFs stay animated.</div></fieldset>
         </section>
         <section class="panel settings-panel mb-3">
             <fieldset class="email-template-settings"><legend class="form-label mb-2">Email details</legend><p class="panel-subtitle mb-3">Use <code>{company}</code> to insert the company name in Webmail.</p><label class="form-label" for="subjectTemplate">Subject Template</label><input class="form-control mb-3" id="subjectTemplate" maxlength="200" value="${escapeHtml(state.emailTemplates.subject)}" placeholder="Enter subject template"><label class="form-label" for="bodyTemplate">Body Template</label><textarea class="form-control" id="bodyTemplate" rows="7" placeholder="Enter body template">${escapeHtml(state.emailTemplates.body)}</textarea></fieldset>
         </section>
 
         <section class="panel settings-panel">
-                        <fieldset class="email-template-settings"><legend class="form-label mb-2">Personal details</legend>
+            <fieldset class="email-template-settings"><legend class="form-label mb-2">Personal details</legend>
               <p class="panel-subtitle mb-3">These details will also appear in Webmail.</p>
               <div class="row g-3">
               ${[
@@ -139,7 +212,7 @@ export function renderSettings(state, updateBrand) {
             </fieldset>
             <button class="copy-btn w-100 mt-4" type="submit"><i class="bi bi-check2 me-1"></i>Save changes</button>
             <span class="small text-secondary d-block mt-2" id="settingsMessage" role="status"></span>
-        </section>  
+        </section>
       </form>
 
       <section class="panel danger-zone mt-3">
@@ -166,7 +239,6 @@ export function renderSettings(state, updateBrand) {
       </div>`;
 }
 
-
 export function bindSettings(state, updateBrand) {
   const input = document.getElementById('displayName');
   const subjectTemplate = document.getElementById('subjectTemplate');
@@ -181,10 +253,22 @@ export function bindSettings(state, updateBrand) {
   };
 
   // --- Theme ---
+  const customBox = document.getElementById('customThemeBox');
   document.querySelectorAll('input[name="theme"]').forEach(choice => choice.addEventListener('change', () => {
     applyTheme(choice.value);
-    document.querySelectorAll('.theme-grid .theme-option').forEach(option => option.classList.toggle('selected', option.querySelector('input').checked));
+    customBox.hidden = choice.value !== 'custom';
+    document.querySelectorAll('input[name="theme"]').forEach(i => i.closest('.theme-option').classList.toggle('selected', i.checked));
     localStorage.setItem('workspaceTheme', choice.value);
+  }));
+
+  document.querySelectorAll('[data-custom]').forEach(picker => picker.addEventListener('input', () => {
+    const c = loadCustomTheme();
+    c[picker.dataset.custom] = picker.value;
+    localStorage.setItem(CUSTOM_KEY, JSON.stringify(c));
+    localStorage.setItem('workspaceTheme', 'custom');
+    applyTheme('custom');
+    const swatch = document.getElementById('customSwatch');
+    if (swatch) swatch.style.background = `linear-gradient(135deg, ${c.side || c.main} 50%, ${c.accent} 50%)`;
   }));
 
   // --- Pets ---
@@ -194,12 +278,11 @@ export function bindSettings(state, updateBrand) {
 
   document.querySelectorAll('input[name="pet"]').forEach(choice => choice.addEventListener('click', () => {
     localStorage.setItem('workspacePet', choice.value);
-    if (choice.value === 'random') pickRandomPet();   // new pet only when you click Random
+    if (choice.value === 'random') pickRandomPet();
     markSelected();
     applyPet();
   }));
 
-  let thumbUrl;
   const showCustom = async () => {
     try {
       const blob = await idbGet('workspacePetCustom');
@@ -256,7 +339,7 @@ export function bindSettings(state, updateBrand) {
   document.addEventListener('keydown', onKey);
 
   confirmBtn.addEventListener('click', async () => {
-    ['workspaceName', 'workspaceTheme', 'emailTemplates', 'webmailCompany',
+    ['workspaceName', 'workspaceTheme', 'workspaceThemeCustom', 'emailTemplates', 'webmailCompany',
       'workspacePet', 'workspacePetCustom', 'collectionState', 'petBag', 'workspacePetRandom',
       'helperGrid', 'helperGridHistory', 'emailReportV2', 'emailReport', 'webmailProgress',
       'workspaceLog', 'workspaceQuota', 'personalDetails']
