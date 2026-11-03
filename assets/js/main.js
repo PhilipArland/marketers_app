@@ -1,4 +1,4 @@
-// import './debug-date.js';
+import './debug-date.js';
 import { renderDashboardHeader } from './dashboard.js';
 import { applyTheme, applyPet, bindSettings, renderSettings } from './settings.js';
 import { bindReportingDashboard, loadReportingState, renderReportingDashboard, resetReportingState } from './reporting.js';
@@ -11,6 +11,7 @@ import { bindCollection, renderCollection } from './collection.js';
 const state = {
     name: localStorage.getItem('workspaceName') || 'User',
     emailTemplates: JSON.parse(localStorage.getItem('emailTemplates') || '{"subject":"","body":""}'),
+    personal: JSON.parse(localStorage.getItem('personalDetails') || '{}'),
     webmailCompany: localStorage.getItem('webmailCompany') || '',
     ...loadReportingState()
 };

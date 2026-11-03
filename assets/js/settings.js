@@ -107,27 +107,47 @@ export function renderSettings(state, updateBrand) {
     + petOption('custom', 'Custom', 'id="customPetOption" hidden');
 
   return `
-      <section class="panel settings-panel mb-3">
-        <div class="d-flex align-items-center gap-3"><div class="blank-icon mb-0"><i class="bi bi-person-gear"></i></div><div><h2 class="panel-title">Workspace settings</h2><div class="panel-subtitle">Personalize your workspace.</div></div></div>
-        <form class="mt-2" id="settingsForm" >
-              <label class="form-label" for="displayName">Your Bitrix name</label>
-              <input class="form-control mb-3" id="displayName" maxlength="50" value="${escapeHtml(state.name)}" placeholder="Enter your name">
-              <fieldset class="mb-4"><legend class="form-label mb-2">Color theme</legend><div class="theme-grid">${choices}</div></fieldset>
-              <fieldset><legend class="form-label mb-2">Pets</legend><div class="theme-grid" id="petGrid">${petChoices}</div><label class="btn btn-sm helper-btn mt-3 w-100 py-2" for="petUpload"><i class="bi bi-upload me-1"></i>Upload your own pet</label><input type="file" id="petUpload" accept="image/*" hidden><div class="small text-secondary mt-2 text-center" id="petMessage" role="status">Any image. GIFs stay animated.</div></fieldset>
-          </section>
-          <section class="panel settings-panel">
-              <fieldset class="email-template-settings mb-4"><legend class="form-label mb-2">Email details</legend><p class="panel-subtitle mb-3">Use <code>{company}</code> to insert the company name in Webmail.</p><label class="form-label" for="subjectTemplate">Subject Template</label><input class="form-control mb-3" id="subjectTemplate" maxlength="200" value="${escapeHtml(state.emailTemplates.subject)}" placeholder="Enter subject template"><label class="form-label" for="bodyTemplate">Body Template</label><textarea class="form-control" id="bodyTemplate" rows="7" placeholder="Enter body template">${escapeHtml(state.emailTemplates.body)}</textarea></fieldset>
-              <button class="copy-btn w-100" type="submit"><i class="bi bi-check2 me-1"></i>Save changes</button>
-              <span class="small text-secondary d-block mt-2" id="settingsMessage" role="status"></span>
-          </section>
-        </form>
+      <form class="mt-2" id="settingsForm" >
+        <section class="panel settings-panel mb-3">
+          <div class="d-flex align-items-center gap-3 mb-2"><div class="blank-icon mb-0"><i class="bi bi-person-gear"></i></div><div><h2 class="panel-title">Workspace settings</h2><div class="panel-subtitle">Personalize your workspace.</div></div></div>
+          <label class="form-label" for="displayName">Your Bitrix name</label>
+          <input class="form-control mb-3" id="displayName" maxlength="50" value="${escapeHtml(state.name)}" placeholder="Enter your name">
+          <fieldset class="mb-4"><legend class="form-label mb-2">Color theme</legend><div class="theme-grid">${choices}</div></fieldset>
+          <fieldset><legend class="form-label mb-2">Pets</legend><div class="theme-grid" id="petGrid">${petChoices}</div><label class="btn btn-sm helper-btn mt-3 w-100 py-2" for="petUpload"><i class="bi bi-upload me-1"></i>Upload your own pet</label><input type="file" id="petUpload" accept="image/*" hidden><div class="small text-secondary mt-2 text-center" id="petMessage" role="status">Any image. GIFs stay animated.</div></fieldset>
+        </section>
+        <section class="panel settings-panel mb-3">
+            <fieldset class="email-template-settings"><legend class="form-label mb-2">Email details</legend><p class="panel-subtitle mb-3">Use <code>{company}</code> to insert the company name in Webmail.</p><label class="form-label" for="subjectTemplate">Subject Template</label><input class="form-control mb-3" id="subjectTemplate" maxlength="200" value="${escapeHtml(state.emailTemplates.subject)}" placeholder="Enter subject template"><label class="form-label" for="bodyTemplate">Body Template</label><textarea class="form-control" id="bodyTemplate" rows="7" placeholder="Enter body template">${escapeHtml(state.emailTemplates.body)}</textarea></fieldset>
+        </section>
+
+        <section class="panel settings-panel">
+                        <fieldset class="email-template-settings"><legend class="form-label mb-2">Personal details</legend>
+              <p class="panel-subtitle mb-3">These details will also appear in Webmail.</p>
+              <div class="row g-3">
+              ${[
+      ['userName', 'fullName', 'Full Name', 'Enter your full name'],
+      ['userCompanyName', 'company', 'Company Name', 'Enter your company name'],
+      ['userAddress', 'address', 'Address', 'Enter your address'],
+      ['userContact', 'contact', 'Contact', 'Enter your contact number'],
+      ['userEmailAddress', 'email', 'Email Address', 'Enter your email address'],
+      ['userWebsite', 'website', 'Website', 'Enter your website']
+    ].map(([id, key, label, hint]) => `
+                <div class="col-12 col-md-6">
+                  <label class="form-label" for="${id}">${label}</label>
+                  <input class="form-control" id="${id}" data-personal="${key}" maxlength="200" value="${escapeHtml((state.personal || {})[key] || '')}" placeholder="${hint}">
+                </div>`).join('')}
+              </div>
+            </fieldset>
+            <button class="copy-btn w-100 mt-4" type="submit"><i class="bi bi-check2 me-1"></i>Save changes</button>
+            <span class="small text-secondary d-block mt-2" id="settingsMessage" role="status"></span>
+        </section>  
+      </form>
 
       <section class="panel danger-zone mt-3">
         <div class="danger-head text-center">
           <div class="danger-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
           <div>
             <h2 class="panel-title danger-title">Danger zone</h2>
-            <div class="panel-subtitle">This will clear all your profile information, webmail templates, personal details, and uploaded profile image. Use this only if you want to start fresh. This action cannot be undone</div>
+            <div class="panel-subtitle">This will clear all your personal workspace settings. Use this only if you want to start fresh. This action cannot be undone</div>
           </div>
         </div>
         <button type="button" class="reset-btn w-100 mt-2" id="resetAllBtn"><i class="bi bi-arrow-counterclockwise me-2"></i>Reset entire workspace</button>
@@ -146,11 +166,19 @@ export function renderSettings(state, updateBrand) {
       </div>`;
 }
 
+
 export function bindSettings(state, updateBrand) {
   const input = document.getElementById('displayName');
   const subjectTemplate = document.getElementById('subjectTemplate');
   const bodyTemplate = document.getElementById('bodyTemplate');
 
+  const settingsMessage = document.getElementById('settingsMessage');
+  let messageTimer;
+  const flash = (text, ms = 3000) => {
+    clearTimeout(messageTimer);
+    settingsMessage.textContent = text;
+    messageTimer = setTimeout(() => { settingsMessage.textContent = ''; }, ms);
+  };
 
   // --- Theme ---
   document.querySelectorAll('input[name="theme"]').forEach(choice => choice.addEventListener('change', () => {
@@ -199,12 +227,15 @@ export function bindSettings(state, updateBrand) {
   // --- Save form ---
   document.getElementById('settingsForm').addEventListener('submit', event => {
     event.preventDefault();
+    state.personal = {};
+    document.querySelectorAll('[data-personal]').forEach(el => { state.personal[el.dataset.personal] = el.value.trim(); });
+    localStorage.setItem('personalDetails', JSON.stringify(state.personal));
     state.name = input.value.trim() || 'User';
     state.emailTemplates = { subject: subjectTemplate.value, body: bodyTemplate.value };
     localStorage.setItem('workspaceName', state.name);
     localStorage.setItem('emailTemplates', JSON.stringify(state.emailTemplates));
     updateBrand();
-    document.getElementById('settingsMessage').textContent = 'Saved successfully.';
+    flash('Saved successfully.');
   });
 
   // --- Reset modal ---
@@ -228,13 +259,14 @@ export function bindSettings(state, updateBrand) {
     ['workspaceName', 'workspaceTheme', 'emailTemplates', 'webmailCompany',
       'workspacePet', 'workspacePetCustom', 'collectionState', 'petBag', 'workspacePetRandom',
       'helperGrid', 'helperGridHistory', 'emailReportV2', 'emailReport', 'webmailProgress',
-      'workspaceLog', 'workspaceQuota']
+      'workspaceLog', 'workspaceQuota', 'personalDetails']
       .forEach(key => localStorage.removeItem(key));
     try { await idbDel('workspacePetCustom'); } catch { }
 
     state.name = 'User';
     state.emailTemplates = { subject: '', body: '' };
     state.webmailCompany = '';
+    state.personal = {};
     resetReportingState(state);
 
     applyTheme('meadow');
@@ -243,6 +275,5 @@ export function bindSettings(state, updateBrand) {
 
     document.getElementById('pageContent').innerHTML = renderSettings(state);
     bindSettings(state, updateBrand);
-    document.getElementById('settingsMessage').textContent = 'Everything has been reset.';
   });
 }
