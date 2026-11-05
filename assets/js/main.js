@@ -80,10 +80,27 @@ document.querySelector('.mobile-navbar').addEventListener('click', event => {
     history.replaceState(null, '', `#${link.dataset.page}`);
     setPage(link.dataset.page);
 });
-document.getElementById('todayLabel').textContent = new Intl.DateTimeFormat('en-PH', {
-    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
-}).format(new Date());
-document.getElementById('creditYear').textContent = new Date().getFullYear();
+const now = new Date();
+
+const timeFmt = new Intl.DateTimeFormat('en-PH', {
+    hour: 'numeric', minute: '2-digit', second: '2-digit',
+    hour12: true, timeZone: 'Asia/Manila'
+});
+
+const dateFmt = new Intl.DateTimeFormat('en-PH', {
+    weekday: 'long', month: 'short', day: 'numeric', year: 'numeric',
+    timeZone: 'Asia/Manila'
+});
+
+function updateClock() {
+    const now = new Date();
+    document.getElementById('todayTime').textContent = timeFmt.format(now);
+    document.getElementById('todayDate').textContent = dateFmt.format(now);
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+document.getElementById('creditYear').textContent = new Intl.DateTimeFormat('en-PH', { year: 'numeric', timeZone: 'Asia/Manila' }).format(now);
 applyTheme(localStorage.getItem('workspaceTheme') || 'meadow');
 updateBrand();
 applyPet();
